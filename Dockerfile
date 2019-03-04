@@ -16,6 +16,11 @@ libcurl4-gnutls-dev \
 && docker-php-ext-enable iconv pdo_mysql gd zip curl bcmath opcache mbstring \
 && apt-get autoremove -y
 
+RUN apt-get update -y && \
+    apt-get install -y libmcrypt-dev && \
+    pecl install mcrypt-1.0.1 && \
+    docker-php-ext-enable mcrypt
+    
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
 RUN apt-get update && apt-get install -y libmagickwand-6.q16-dev --no-install-recommends \

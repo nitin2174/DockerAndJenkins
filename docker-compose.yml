@@ -47,3 +47,5 @@ services:
         container_name: ${JENKINS_HOST}
         ports:
             - "10125:8080"
+        volumes:
+            - ./jenkins_home:/var/jenkins_home
