@@ -1,36 +1,65 @@
+def WP_CONTAINER_NAME="wordpress"
+def MS_CONTAINER_NAME="mysql"
+def MS_CONTAINER_TAG="5.7"
+def WP_CONTAINER_TAG="latest"
+def DOCKER_HUB_USER="nitin2174"
+def WP_HTTP_PORT="10127"
+
 node {
-    def app
 
-    stage('Clone repository') {
-        /* Let's make sure we have the repository cloned to our workspace */
+    stage('Initialize'){
+        def dockerHome = tool 'myDocker'
+        env.PATH = "${dockerHome}/bin:${env.PATH}"
+    }
 
+    stage('Checkout') {
         checkout scm
     }
 
-    stage('Build image') {
-        /* This builds the actual image; synonymous to
-         * docker build on the command line */
-
-        app = docker.build("mysql")
+    stage("Image Prune"){
+        imagePrune(MS_CONTAINER_NAME)
+        imagePrune(WP_CONTAINER_NAME)
     }
 
-    stage('Test image') {
-        /* Ideally, we would run a test framework against our image.
-         */
+    stage('Image Build'){
+        imageBuild(MS_CONTAINER_NAME, MS_CONTAINER_TAG)
+        imageBuild(WP_CONTAINER_NAME, WP_CONTAINER_TAG)
+    }
 
-        app.inside {
-            sh 'echo "Tests passed"'
+    stage('Push to Docker Registry'){
+        withCredentials([usernamePassword(credentialsId: 'dockerHubAccount', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            pushToImage(MS_CONTAINER_NAME, MS_CONTAINER_TAG, USERNAME, PASSWORD)
+            pushToImage(WP_CONTAINER_NAME, WP_CONTAINER_TAG, USERNAME, PASSWORD)
         }
     }
 
-    stage('Push image') {
-        /* Finally, we'll push the image with two tags:
-         * First, the incremental build number from Jenkins
-         * Second, the 'latest' tag.
-         * Pushing multiple tags is cheap, as all the layers are reused. */
-        docker.withRegistry('http://localhost:5000', 'docker-hub-credentials') {
-            app.push("${env.BUILD_NUMBER}")
-            app.push("latest")
-        }
+    stage('Run App'){
+        runApp(WP_CONTAINER_NAME, WP_CONTAINER_TAG, DOCKER_HUB_USER, WP_HTTP_PORT)
     }
+
+}
+
+def imagePrune(containerName){
+    try {
+        sh "docker image prune -f"
+        sh "docker stop $containerName"
+    } catch(error){}
+}
+
+def imageBuild(containerName, tag){
+    sh "docker-compose build $containerName"
+    echo "Image build complete"
+}
+
+def pushToImage(containerName, tag, dockerUser, dockerPassword){
+    sh "docker login -u $dockerUser -p $dockerPassword"
+    sh "docker tag $containerName:$tag $dockerUser/$containerName:$tag"
+    sh "docker push $dockerUser/$containerName:$tag"
+    echo "Image push complete"
+}
+
+def runApp(containerName, tag, dockerHubUser, httpPort){
+    sh "docker pull $dockerHubUser/$containerName"
+    sh "docker-compose up -d $dockerHubUser/$containerName"
+    echo "Application started on port: ${httpPort} (http)"
 }
