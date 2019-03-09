@@ -5,12 +5,12 @@ def WP_CONTAINER_TAG="latest"
 def DOCKER_HUB_USER="nitin2174"
 def WP_HTTP_PORT="10127"
 
+
 node {
 
     stage('Initialize'){
         def dockerHome = tool 'myDocker'
         env.PATH = "${dockerHome}/bin:${env.PATH}"
-
     }
 
     stage('Checkout') {
@@ -48,9 +48,7 @@ def imagePrune(containerName){
 }
 
 def imageBuild(containerName, tag){
-    withEnv(["PATH = $PATH:/usr/local/bin"]){
-      sh "docker-compose build $containerName"
-    }
+    sh "docker-compose build $containerName"
     echo "Image build complete"
 }
 
@@ -63,8 +61,6 @@ def pushToImage(containerName, tag, dockerUser, dockerPassword){
 
 def runApp(containerName, tag, dockerHubUser, httpPort){
     sh "docker pull $dockerHubUser/$containerName"
-    withEnv(["PATH = $PATH:/usr/local/bin"]){
-      sh "docker-compose up -d $dockerHubUser/$containerName"
-    }
+    sh "docker-compose up -d $dockerHubUser/$containerName"
     echo "Application started on port: ${httpPort} (http)"
 }
