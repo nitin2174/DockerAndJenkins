@@ -51,10 +51,11 @@ services:
             dockerfile: Dockerfile
         image: jenkins
         privileged: true
-        user: root
+        user: jenkins
         container_name: ${JENKINS_HOST}
         ports:
-            - "10125:8080"
+            - "10125:10125"
+            - "50000:50000"
         volumes:
             - ./jenkins_home:/var/jenkins_home
             - /var/run/docker.sock:/var/run/docker.sock
