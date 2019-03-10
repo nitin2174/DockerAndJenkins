@@ -49,7 +49,7 @@ services:
         build:
             context: ./jenkins
             dockerfile: Dockerfile
-        image: jenkins
+        image: jenkins/jenkin:lts
         privileged: true
         user: root
         container_name: ${JENKINS_HOST}
