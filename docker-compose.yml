@@ -9,7 +9,7 @@ services:
         build:
             context: ./wordpress
             dockerfile: Dockerfile
-        image: wordpress:latest
+        image: nitin2174/wordpress:latest
         links:
             - mysql
         restart: always
@@ -30,7 +30,7 @@ services:
         build:
             context: ./mysql
             dockerfile: Dockerfile
-        image: mysql:5.7
+        image: nitin2174/mysql:5.7
         restart: unless-stopped
         hostname: mysql
         #command: --default-authentication-plugin=mysql_native_password
