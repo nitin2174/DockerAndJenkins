@@ -1,11 +1,12 @@
 # DockerAndJenkins
 Docker And Jenkins
 
-docker-compose build
+1. docker-compose build jenkins
 
-docker-compose -d jenkins
+2. docker-compose -d jenkins
 
-docker-compose -d mysql
+3. Go to http://localhost:10125 and Login with user:nitin and password: nitin
 
-docker-compose -d wordpress
+4. Build Now Job wordpress-mysql containers
 
+5. Go to http://localhost:10127 and wordpress is ready to use.
