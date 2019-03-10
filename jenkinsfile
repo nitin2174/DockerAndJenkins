@@ -4,7 +4,6 @@ def MS_CONTAINER_TAG="5.7"
 def WP_CONTAINER_TAG="latest"
 def DOCKER_HUB_USER="nitin2174"
 def WP_HTTP_PORT="10127"
-def MS_HTTP_PORT="10126"
 
 
 node {
@@ -36,7 +35,6 @@ node {
     }
 
     stage('Run App'){
-        runApp(MS_CONTAINER_NAME, MS_CONTAINER_TAG, DOCKER_HUB_USER, MS_HTTP_PORT)
         runApp(WP_CONTAINER_NAME, WP_CONTAINER_TAG, DOCKER_HUB_USER, WP_HTTP_PORT)
     }
 
