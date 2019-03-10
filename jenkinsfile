@@ -10,7 +10,7 @@ node {
 
     stage('Initialize'){
         def dockerHome = tool 'myDocker'
-        env.PATH = "${dockerHome}/bin:${env.PATH}"
+        env.PATH = "${dockerHome}/bin:/usr/local/bin:${env.PATH}"
     }
 
     stage('Checkout') {
@@ -48,7 +48,7 @@ def imagePrune(containerName){
 }
 
 def imageBuild(containerName, tag){
-    sh "docker build -t $containerName:$tag  -t $containerName --pull --no-cache ./$containerName"
+    sh "docker-compose build $containerName"
     echo "Image build complete"
 }
 
