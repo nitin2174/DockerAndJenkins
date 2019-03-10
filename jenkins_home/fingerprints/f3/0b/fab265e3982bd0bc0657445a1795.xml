@@ -1,0 +1,13 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<fingerprint>
+  <timestamp>2019-03-10 08:39:30.886 UTC</timestamp>
+  <md5sum>f30bfab265e3982bd0bc0657445a1795</md5sum>
+  <fileName>Credential id=dockerHubAccount name=nitin2174/****** (dockerHubAccount)</fileName>
+  <usages>
+    <entry>
+      <string>wordpress-mysql containers</string>
+      <ranges>4-5</ranges>
+    </entry>
+  </usages>
+  <facets/>
+</fingerprint>

@@ -1,0 +1,206 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-build plugin="workflow-job@2.32">
+  <actions>
+    <hudson.model.CauseAction>
+      <causeBag class="linked-hash-map">
+        <entry>
+          <hudson.model.Cause_-UserIdCause>
+            <userId>nitin</userId>
+          </hudson.model.Cause_-UserIdCause>
+          <int>1</int>
+        </entry>
+      </causeBag>
+    </hudson.model.CauseAction>
+    <hudson.plugins.git.util.BuildData plugin="git@3.9.3">
+      <buildsByBranchName>
+        <entry>
+          <string>refs/remotes/origin/master</string>
+          <hudson.plugins.git.util.Build>
+            <marked plugin="git-client@2.7.6">
+              <sha1>60ae2de74b99e2b23a9e73ab9c0be67a65e69d40</sha1>
+              <branches class="list">
+                <hudson.plugins.git.Branch>
+                  <sha1 reference="../../../sha1"/>
+                  <name>refs/remotes/origin/master</name>
+                </hudson.plugins.git.Branch>
+              </branches>
+            </marked>
+            <revision reference="../marked"/>
+            <hudsonBuildNumber>3</hudsonBuildNumber>
+          </hudson.plugins.git.util.Build>
+        </entry>
+      </buildsByBranchName>
+      <lastBuild reference="../buildsByBranchName/entry/hudson.plugins.git.util.Build"/>
+      <remoteUrls>
+        <string>https://github.com/nitin2174/DockerAndJenkins.git</string>
+      </remoteUrls>
+    </hudson.plugins.git.util.BuildData>
+    <hudson.plugins.git.GitTagAction plugin="git@3.9.3">
+      <tags class="hudson.util.CopyOnWriteMap$Tree">
+        <entry>
+          <string>refs/remotes/origin/master</string>
+          <list/>
+        </entry>
+      </tags>
+      <ws>/var/jenkins_home/workspace/wordpress-mysql containers@script</ws>
+    </hudson.plugins.git.GitTagAction>
+    <org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState plugin="workflow-scm-step@2.7">
+      <revisionStates>
+        <entry>
+          <string>git https://github.com/nitin2174/DockerAndJenkins.git</string>
+          <hudson.scm.SCMRevisionState_-None/>
+        </entry>
+      </revisionStates>
+    </org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState>
+    <org.jenkinsci.plugins.workflow.libs.LibrariesAction plugin="workflow-cps-global-lib@2.13">
+      <libraries/>
+    </org.jenkinsci.plugins.workflow.libs.LibrariesAction>
+    <org.jenkinsci.plugins.workflow.cps.EnvActionImpl plugin="workflow-cps@2.64">
+      <env class="tree-map">
+        <entry>
+          <string>PATH</string>
+          <string>/bin:/usr/local/bin:/usr/local/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</string>
+        </entry>
+      </env>
+    </org.jenkinsci.plugins.workflow.cps.EnvActionImpl>
+  </actions>
+  <queueId>5</queueId>
+  <timestamp>1552206142538</timestamp>
+  <startTime>1552206142546</startTime>
+  <result>FAILURE</result>
+  <duration>144767</duration>
+  <charset>UTF-8</charset>
+  <keepLog>false</keepLog>
+  <execution class="org.jenkinsci.plugins.workflow.cps.CpsFlowExecution">
+    <result>FAILURE</result>
+    <script>def WP_CONTAINER_NAME=&quot;wordpress&quot;
+def MS_CONTAINER_NAME=&quot;mysql&quot;
+def MS_CONTAINER_TAG=&quot;5.7&quot;
+def WP_CONTAINER_TAG=&quot;latest&quot;
+def DOCKER_HUB_USER=&quot;nitin2174&quot;
+def WP_HTTP_PORT=&quot;10127&quot;
+
+
+node {
+
+    stage(&apos;Initialize&apos;){
+        def dockerHome = tool &apos;myDocker&apos;
+        env.PATH = &quot;${dockerHome}/bin:${env.PATH}&quot;
+    }
+
+    stage(&apos;Checkout&apos;) {
+        checkout scm
+    }
+
+    stage(&quot;Image Prune&quot;){
+        imagePrune(MS_CONTAINER_NAME)
+        imagePrune(WP_CONTAINER_NAME)
+    }
+
+    stage(&apos;Image Build&apos;){
+        imageBuild(MS_CONTAINER_NAME, MS_CONTAINER_TAG)
+        imageBuild(WP_CONTAINER_NAME, WP_CONTAINER_TAG)
+    }
+
+    stage(&apos;Push to Docker Registry&apos;){
+        withCredentials([usernamePassword(credentialsId: &apos;dockerHubAccount&apos;, usernameVariable: &apos;USERNAME&apos;, passwordVariable: &apos;PASSWORD&apos;)]) {
+            pushToImage(MS_CONTAINER_NAME, MS_CONTAINER_TAG, USERNAME, PASSWORD)
+            pushToImage(WP_CONTAINER_NAME, WP_CONTAINER_TAG, USERNAME, PASSWORD)
+        }
+    }
+
+    stage(&apos;Run App&apos;){
+        runApp(WP_CONTAINER_NAME, WP_CONTAINER_TAG, DOCKER_HUB_USER, WP_HTTP_PORT)
+    }
+
+}
+
+def imagePrune(containerName){
+    try {
+        sh &quot;docker image prune -f&quot;
+        sh &quot;docker stop $containerName&quot;
+    } catch(error){}
+}
+
+def imageBuild(containerName, tag){
+    sh &quot;/usr/local/bin/docker-compose build $containerName&quot;
+    echo &quot;Image build complete&quot;
+}
+
+def pushToImage(containerName, tag, dockerUser, dockerPassword){
+    sh &quot;docker login -u $dockerUser -p $dockerPassword&quot;
+    sh &quot;docker tag $containerName:$tag $dockerUser/$containerName:$tag&quot;
+    sh &quot;docker push $dockerUser/$containerName:$tag&quot;
+    echo &quot;Image push complete&quot;
+}
+
+def runApp(containerName, tag, dockerHubUser, httpPort){
+    sh &quot;docker pull $dockerHubUser/$containerName&quot;
+    sh &quot;/usr/local/bin/docker-compose up -d $dockerHubUser/$containerName&quot;
+    echo &quot;Application started on port: ${httpPort} (http)&quot;
+}
+</script>
+    <loadedScripts class="map"/>
+    <durabilityHint>MAX_SURVIVABILITY</durabilityHint>
+    <timings class="map">
+      <entry>
+        <string>flowNode</string>
+        <long>434293930</long>
+      </entry>
+      <entry>
+        <string>classLoad</string>
+        <long>65499004</long>
+      </entry>
+      <entry>
+        <string>run</string>
+        <long>4900540044</long>
+      </entry>
+      <entry>
+        <string>parse</string>
+        <long>71631912</long>
+      </entry>
+      <entry>
+        <string>saveProgram</string>
+        <long>2200923758</long>
+      </entry>
+    </timings>
+    <sandbox>true</sandbox>
+    <iota>30</iota>
+    <head>1:30</head>
+    <done>true</done>
+    <resumeBlocked>false</resumeBlocked>
+  </execution>
+  <completed>true</completed>
+  <checkouts class="hudson.util.PersistedList">
+    <org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+      <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.3">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>https://github.com/nitin2174/DockerAndJenkins.git</url>
+            <credentialsId>github</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>*/master</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+        <extensions/>
+      </scm>
+      <node></node>
+      <workspace>/var/jenkins_home/workspace/wordpress-mysql containers@script</workspace>
+      <changelogFile>/var/jenkins_home/jobs/wordpress-mysql containers/builds/3/changelog0.xml</changelogFile>
+      <pollingBaseline class="hudson.scm.SCMRevisionState$None" reference="../../../actions/org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState/revisionStates/entry/hudson.scm.SCMRevisionState_-None"/>
+    </org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+    <org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+      <scm class="hudson.plugins.git.GitSCM" reference="../../org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout/scm"/>
+      <node></node>
+      <workspace>/var/jenkins_home/workspace/wordpress-mysql containers</workspace>
+      <changelogFile>/var/jenkins_home/jobs/wordpress-mysql containers/builds/3/changelog1.xml</changelogFile>
+      <pollingBaseline class="hudson.scm.SCMRevisionState$None" reference="../../../actions/org.jenkinsci.plugins.workflow.steps.scm.MultiSCMRevisionState/revisionStates/entry/hudson.scm.SCMRevisionState_-None"/>
+    </org.jenkinsci.plugins.workflow.job.WorkflowRun_-SCMCheckout>
+  </checkouts>
+</flow-build>
