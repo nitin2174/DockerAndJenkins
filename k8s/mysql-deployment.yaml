@@ -6,9 +6,9 @@ metadata:
     app: wordpress
 spec:
   ports:
-  - port: 20124
-    protocol: TCP
-    targetPort: 3306
+    - port: 20124
+      protocol: TCP
+      targetPort: 3306
   selector:
     app: wordpress
     tier: mysql
@@ -53,7 +53,7 @@ spec:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-dev
+              name: mysql-pass
               key: password
         ports:
         - containerPort: 3306

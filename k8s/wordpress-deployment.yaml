@@ -7,8 +7,8 @@ metadata:
 spec:
   ports:
     - port: 20123
-      targetPort: 80
       protocol: TCP
+      targetPort: 80
   selector:
     app: wordpress
     tier: frontend
@@ -51,11 +51,11 @@ spec:
         name: wordpress
         env:
         - name: WORDPRESS_DB_HOST
-          value: mysql:20124
+          value: wordpress-mysql
         - name: WORDPRESS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-dev
+              name: mysql-pass
               key: password
         ports:
         - containerPort: 80
